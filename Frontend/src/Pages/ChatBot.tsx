@@ -13,6 +13,7 @@ import SendIcon from "@mui/icons-material/Send";
 import CloseIcon from "@mui/icons-material/Close";
 import PersonIcon from "@mui/icons-material/Person";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
+import axios from "axios";
 
 const ChatBot = ({ onClose }: { onClose: () => void }) => {
   const [messages, setMessages] = useState<{ from: string; text: string }[]>(
@@ -96,28 +97,235 @@ const ChatBot = ({ onClose }: { onClose: () => void }) => {
 
   const handleSendMessage = async () => {
     if (!input.trim()) return;
-    const query = input;
+
+    const query = input.trim();
     setInput("");
     setMessages((prev) => [...prev, { from: "user", text: query }]);
     setLoading(true);
 
-    try {
-      const res = await fetch("https://chatbotnew-dd3r.onrender.com/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ query }),
-      });
-      const data = await res.json();
+    const keywords: string[] = [
+      "hi",
+      "hello",
+      "explain",
+      "details",
+      "name",
+      "what do you do?",
+      "research",
+      "brain",
+      "mortality",
+      "risk",
+      "symptoms",
+      "brain tumor",
+      "glioblastoma",
+      "mri",
+      "surgery",
+      "radiation",
+      "tumor",
+      "brain cancer",
+      "treatment",
+      "biopsy",
+      "grading",
+      "elaborate",
+      "understand",
+      "other symptoms",
+      "brain tumour",
+      "mass",
+      "lesion",
+      "astrocytoma",
+      "oligodendroglioma",
+      "meningioma",
+      "ependymoma",
+      "medulloblastoma",
+      "schwannoma",
+      "craniopharyngioma",
+      "pituitary",
+      "pituitary adenoma",
+      "choroid plexus tumor",
+      "pineoblastoma",
+      "glioma",
+      "metastatic tumor",
+      "ct",
+      "pet",
+      "neuroimaging",
+      "imaging",
+      "scan",
+      "contrast enhancement",
+      "diffusion",
+      "flair",
+      "t1",
+      "t2",
+      "adc",
+      "perfusion",
+      "edema",
+      "histopathology",
+      "classification",
+      "segmentation",
+      "radiomics",
+      "headache",
+      "nausea",
+      "vomiting",
+      "?",
+      "blurred vision",
+      "double vision",
+      "seizure",
+      "memory loss",
+      "confusion",
+      "balance issues",
+      "speech difficulty",
+      "cognitive decline",
+      "personality change",
+      "motor dysfunction",
+      "neurosurgery",
+      "craniotomy",
+      "radiotherapy",
+      "chemotherapy",
+      "temozolomide",
+      "bevacizumab",
+      "targeted therapy",
+      "immunotherapy",
+      "gamma knife",
+      "proton therapy",
+      "tumor treating fields",
+      "palliative care",
+      "recurrence",
+      "tumor progression",
+      "surveillance",
+      "follow-up",
+      "clinical trials",
+      "karnofsky score",
+      "neurological exam",
+      "steroids",
+      "dexamethasone",
+      "neuro-oncology",
+      "oncology",
+      "neurology",
+      "neuroscience",
+      "neuro surgeon",
+      "cns tumor",
+      "central nervous system",
+      "malignant",
+      "benign",
+      "idh mutation",
+      "mgmt methylation",
+      "1p/19q co-deletion",
+      "egfr",
+      "tp53",
+      "atrx",
+      "molecular markers",
+      "biomarkers",
+      "genomic profiling",
+      "gliosis",
+      "necrosis",
+      "proliferation index",
+      "ki-67",
+      "braf mutation",
+      "h3k27m mutation",
+      "tert promoter mutation",
+      "next-gen sequencing",
+      "oncogene",
+      "tumor suppressor",
+      "frontal lobe",
+      "temporal lobe",
+      "parietal lobe",
+      "occipital lobe",
+      "cerebellum",
+      "brainstem",
+      "pituitary gland",
+      "pineal gland",
+      "ventricles",
+      "corpus callosum",
+      "radiation planning",
+      "brain mapping",
+      "stereotactic surgery",
+      "neuronavigation",
+      "intraoperative mri",
+      "biomarker testing",
+      "tumor board",
+      "clinical pathway",
+      "spectroscopy",
+      "functional mri",
+      "tractography",
+      "susceptibility weighted imaging",
+      "mrs",
+      "neuropsychology",
+      "rehabilitation",
+      "causes",
+      "risk factors",
+      "genetics",
+      "environmental factors",
+      "lifestyle factors",
+      "family history",
+      "radiation exposure",
+      "infiltration",
+      "cause",
+      "the",
+      "mass effect",
+      "midline shift",
+      "occupational therapy",
+      "speech therapy",
+      "cognitive rehab",
+      "psychosocial support",
+      "neuropsychological evaluation",
+      "palliative team",
+      "fatigue management",
+      "phase 1 trial",
+      "placebo controlled",
+      "double blind",
+      "overall survival",
+      "progression free survival",
+      "tumor registry",
+      "cohort study",
+      "immunotherapy pipeline",
+    ];
+    const normalizedQuery = query.toLowerCase();
+    const wordsInQuery = normalizedQuery.split(/\s+/);
+
+    const hasKeyword = keywords.some((keyword) =>
+      wordsInQuery.includes(keyword.toLowerCase())
+    );
+
+    if (!hasKeyword) {
       setMessages((prev) => [
         ...prev,
         {
           from: "bot",
-          text: data?.response || "Please ask a valid question.",
+          text: "I don’t have access to information related to that topic. Please ask a valid question based on brain tumors.",
         },
       ]);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyDgkcuIzJL00nfE-mH2-jp_nu2WJKKoOIQ",
+        {
+          contents: [
+            {
+              parts: [
+                {
+                  text:
+                    "Answer the following question in 2 to 5 sentences max. Keep it clear and concise:\n\n" +
+                    query,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const botReply =
+        response?.data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+        "Please ask a valid question.";
+
+      setMessages((prev) => [...prev, { from: "bot", text: botReply }]);
     } catch (err) {
+      console.error(err);
       setMessages((prev) => [
         ...prev,
         { from: "bot", text: "Something went wrong." },
